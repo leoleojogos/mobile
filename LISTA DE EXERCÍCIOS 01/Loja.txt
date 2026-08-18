@@ -1,0 +1,115 @@
+class Produto(val id: Int, val nome: String, val preco: Double, var estoque: Int) {
+    fun exibirDetalhes() {
+        println("ID: $id | Produto: $nome | R$ $preco | Estoque: $estoque")
+    }
+}
+
+class Cliente(val id: Int, val nome: String, var saldo: Double) {
+    fun adicionarSaldo(valor: Double) {
+        saldo += valor
+        println("Saldo recarregado. Novo saldo de $nome: R$ $saldo")
+    }
+}
+
+class CarrinhoDeCompras {
+    val produtos = mutableListOf<Produto>()
+
+    fun adicionarProduto(produto: Produto, quantidade: Int) {
+        for (i in 1..quantidade) {
+            produtos.add(produto)
+        }
+        println("$quantidade x ${produto.nome} adicionado(s) ao carrinho.")
+    }
+
+    fun removerProduto(produto: Produto) {
+        produtos.remove(produto)
+        println("${produto.nome} removido do carrinho.")
+    }
+
+    fun exibirCarrinho() {
+        println("--- Itens no Carrinho ---")
+        var i = 0
+        while (i < produtos.size) {
+            println("- ${produtos[i].nome} (R$ ${produtos[i].preco})")
+            i++
+        }
+    }
+
+    fun calcularTotal(): Double {
+        var total: Double = 0.0
+        var i = 0
+        while (i < produtos.size) {
+            total += produtos[i].preco
+            i++
+        }
+        return total
+    }
+}
+
+class Loja {
+    val produtosDisponiveis = mutableListOf<Produto>()
+
+    fun listarProdutos() {
+        println("--- Produtos Disponíveis na Loja ---")
+        var i = 0
+        while (i < produtosDisponiveis.size) {
+            produtosDisponiveis[i].exibirDetalhes()
+            i++
+        }
+    }
+
+    fun finalizarCompra(cliente: Cliente, carrinho: CarrinhoDeCompras) {
+        val total = carrinho.calcularTotal()
+        
+        if (total <= cliente.saldo) {
+            cliente.saldo = cliente.saldo - total
+            
+            var i = 0
+            while (i < carrinho.produtos.size) {
+                carrinho.produtos[i].estoque = carrinho.produtos[i].estoque - 1
+                i++
+            }
+            
+            println("Compra finalizada com sucesso! Total pago: R$ $total")
+            println("Saldo restante: R$ ${cliente.saldo}")
+            
+            carrinho.produtos.clear() 
+        } else {
+            println("Compra cancelada! Saldo insuficiente. Total da compra: R$ $total | Saldo atual: R$ ${cliente.saldo}")
+        }
+    }
+}
+
+fun main() {
+    val loja = Loja()
+    
+    val p1 = Produto(1, "Smartphone S24 FE", 3500.0, 10)
+    val p2 = Produto(2, "Controle Nintendo Switch", 350.0, 5)
+    val p3 = Produto(3, "Asset Pack 2D Pixel Art", 50.0, 100)
+    
+    loja.produtosDisponiveis.addAll(listOf(p1, p2, p3)) 
+
+    val cliente = Cliente(1, "Leonardo", 3000.0) 
+    val carrinho = CarrinhoDeCompras()
+
+    loja.listarProdutos()
+
+    println("\n=== Adicionando itens no carrinho ===")
+    carrinho.adicionarProduto(p1, 1)
+    carrinho.adicionarProduto(p2, 1)
+    
+    carrinho.exibirCarrinho()
+    println("Total atual do carrinho: R$ ${carrinho.calcularTotal()}")
+
+    println("\n=== Tentativa de Pagamento ===")
+    loja.finalizarCompra(cliente, carrinho)
+
+    println("\n=== Recarga de Saldo ===")
+    cliente.adicionarSaldo(1000.0)
+    
+    println("\n=== Segunda Tentativa de Pagamento ===")
+    loja.finalizarCompra(cliente, carrinho)
+    
+    println("\n=== Produtos na Loja (Após Compra) ===")
+    loja.listarProdutos()
+}
